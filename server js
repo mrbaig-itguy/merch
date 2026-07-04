@@ -1,0 +1,309 @@
+/*
+=========================================================
+ Tactical Merch Store Backend
+ server.js
+=========================================================
+*/
+
+const express = require("express");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(__dirname, "public")));
+
+//////////////////////////////////////////////////////////
+// Sample Product Database
+//////////////////////////////////////////////////////////
+
+const products = [
+
+{
+    id:1,
+    name:"Recon Hoodie",
+    category:"Hoodies",
+    description:"Heavyweight tactical hoodie.",
+    price:69.99,
+    image:"images/hoodie.jpg",
+    stock:20
+},
+
+{
+    id:2,
+    name:"Strike Tee",
+    category:"T-Shirts",
+    description:"Premium cotton gaming tee.",
+    price:29.99,
+    image:"images/shirt.jpg",
+    stock:40
+},
+
+{
+    id:3,
+    name:"Operator Mousepad",
+    category:"Accessories",
+    description:"Large esports desk mat.",
+    price:24.99,
+    image:"images/mousepad.jpg",
+    stock:35
+},
+
+{
+    id:4,
+    name:"Tactical Cap",
+    category:"Accessories",
+    description:"Adjustable embroidered cap.",
+    price:22.99,
+    image:"images/cap.jpg",
+    stock:18
+},
+
+{
+    id:5,
+    name:"Stealth Backpack",
+    category:"Bags",
+    description:"Gaming travel backpack.",
+    price:89.99,
+    image:"images/bag.jpg",
+    stock:12
+}
+
+];
+
+//////////////////////////////////////////////////////////
+// Orders (temporary memory)
+//////////////////////////////////////////////////////////
+
+const orders = [];
+
+//////////////////////////////////////////////////////////
+// Routes
+//////////////////////////////////////////////////////////
+
+app.get("/api/products", (req,res)=>{
+
+    res.json(products);
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.get("/api/products/:id",(req,res)=>{
+
+    const id = Number(req.params.id);
+
+    const product = products.find(p=>p.id===id);
+
+    if(!product){
+
+        return res.status(404).json({
+
+            success:false,
+
+            message:"Product not found"
+
+        });
+
+    }
+
+    res.json(product);
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.get("/api/categories",(req,res)=>{
+
+    const categories = [
+
+        "All",
+
+        ...new Set(products.map(p=>p.category))
+
+    ];
+
+    res.json(categories);
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.post("/api/order",(req,res)=>{
+
+    const {
+
+        customer,
+
+        cart
+
+    } = req.body;
+
+    if(!customer){
+
+        return res.status(400).json({
+
+            success:false,
+
+            message:"Customer required"
+
+        });
+
+    }
+
+    if(!cart || cart.length===0){
+
+        return res.status(400).json({
+
+            success:false,
+
+            message:"Cart is empty"
+
+        });
+
+    }
+
+    let total = 0;
+
+    const items = [];
+
+    for(const item of cart){
+
+        const product = products.find(
+
+            p=>p.id===item.id
+
+        );
+
+        if(!product){
+
+            continue;
+
+        }
+
+        const qty = item.qty || 1;
+
+        total += product.price * qty;
+
+        items.push({
+
+            id:product.id,
+
+            name:product.name,
+
+            qty,
+
+            price:product.price
+
+        });
+
+    }
+
+    const order = {
+
+        id:Date.now(),
+
+        customer,
+
+        items,
+
+        total:Number(total.toFixed(2)),
+
+        status:"Pending",
+
+        created:new Date()
+
+    };
+
+    orders.push(order);
+
+    res.json({
+
+        success:true,
+
+        order
+
+    });
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.get("/api/orders",(req,res)=>{
+
+    res.json(orders);
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.get("/api/search",(req,res)=>{
+
+    const q =
+
+    (req.query.q || "").toLowerCase();
+
+    const result = products.filter(product=>{
+
+        return (
+
+            product.name.toLowerCase().includes(q)
+
+            ||
+
+            product.category.toLowerCase().includes(q)
+
+            ||
+
+            product.description.toLowerCase().includes(q)
+
+        );
+
+    });
+
+    res.json(result);
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.get("/api/featured",(req,res)=>{
+
+    res.json(products.slice(0,3));
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.use((req,res)=>{
+
+    res.status(404).json({
+
+        success:false,
+
+        message:"Route not found"
+
+    });
+
+});
+
+//////////////////////////////////////////////////////////
+
+app.listen(PORT,()=>{
+
+    console.log("");
+
+    console.log("================================");
+
+    console.log(" Tactical Merch Store Running");
+
+    console.log("================================");
+
+    console.log(`Server : http://localhost:${PORT}`);
+
+    console.log("");
+
+});
