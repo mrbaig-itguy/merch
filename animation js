@@ -1,0 +1,281 @@
+/*
+=========================================================
+TACTICAL MERCH STORE
+animations.js
+Pure JS Animation Layer (No libraries required)
+=========================================================
+*/
+
+/* =========================
+   GLOBAL HELPERS
+========================= */
+
+const qs = (s) => document.querySelector(s);
+const qsa = (s) => document.querySelectorAll(s);
+
+/* =========================
+   BUTTON RIPPLE EFFECT
+========================= */
+
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+
+    if (!btn) return;
+
+    const ripple = document.createElement("span");
+
+    ripple.className = "ripple";
+
+    const rect = btn.getBoundingClientRect();
+
+    ripple.style.left = `${e.clientX - rect.left}px`;
+    ripple.style.top = `${e.clientY - rect.top}px`;
+
+    btn.appendChild(ripple);
+
+    setTimeout(() => ripple.remove(), 600);
+});
+
+/* CSS REQUIRED (add to style.css)
+.ripple {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: rippleAnim 0.6s linear;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(20);
+        opacity: 0;
+    }
+}
+*/
+
+/* =========================
+   SCROLL REVEAL ANIMATION
+========================= */
+
+const revealElements = () => {
+    const elements = qsa(".product-card, .hero-title, .section-title");
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("show");
+            }
+        });
+    }, {
+        threshold: 0.15
+    });
+
+    elements.forEach(el => observer.observe(el));
+};
+
+revealElements();
+
+/* CSS REQUIRED
+.product-card,
+.hero-title,
+.section-title {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 0.6s ease;
+}
+
+.product-card.show,
+.hero-title.show,
+.section-title.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+*/
+
+/* =========================
+   HERO PARALLAX EFFECT
+========================= */
+
+window.addEventListener("scroll", () => {
+    const hero = qs(".hero");
+
+    if (!hero) return;
+
+    const offset = window.scrollY;
+
+    hero.style.transform = `translateY(${offset * 0.3}px)`;
+});
+
+/* =========================
+   FLOATING PARTICLES BACKGROUND
+========================= */
+
+function createParticles() {
+    const container = document.createElement("div");
+
+    container.className = "particles";
+
+    document.body.appendChild(container);
+
+    for (let i = 0; i < 40; i++) {
+
+        const dot = document.createElement("span");
+
+        dot.className = "particle";
+
+        dot.style.left = Math.random() * 100 + "vw";
+
+        dot.style.top = Math.random() * 100 + "vh";
+
+        dot.style.animationDuration = (5 + Math.random() * 10) + "s";
+
+        dot.style.opacity = Math.random();
+
+        container.appendChild(dot);
+    }
+}
+
+createParticles();
+
+/* CSS REQUIRED
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(0, 255, 200, 0.4);
+    border-radius: 50%;
+    animation: float linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100vh); }
+}
+*/
+
+/* =========================
+   TOAST ANIMATION ENHANCEMENT
+========================= */
+
+function enhanceToasts() {
+    const observer = new MutationObserver(() => {
+        const toasts = qsa(".toast");
+
+        toasts.forEach(toast => {
+            toast.style.transform = "translateY(0)";
+            toast.style.opacity = "1";
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true
+    });
+}
+
+enhanceToasts();
+
+/* =========================
+   MOUSE HOVER GLOW EFFECT
+========================= */
+
+document.addEventListener("mousemove", (e) => {
+    const glow = qs(".cursor-glow");
+
+    if (!glow) return;
+
+    glow.style.left = e.clientX + "px";
+    glow.style.top = e.clientY + "px";
+});
+
+/* OPTIONAL ELEMENT
+<div class="cursor-glow"></div>
+*/
+
+/* CSS REQUIRED
+.cursor-glow {
+    position: fixed;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(0,255,200,0.15), transparent 60%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+*/
+
+/* =========================
+   CHECKOUT CONFETTI EFFECT
+========================= */
+
+function confettiBurst() {
+
+    const colors = ["#00ffc8", "#ff4655", "#ffffff"];
+
+    for (let i = 0; i < 80; i++) {
+
+        const confetti = document.createElement("div");
+
+        confetti.className = "confetti";
+
+        confetti.style.left = Math.random() * 100 + "vw";
+
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
+
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 4000);
+    }
+}
+
+/* CSS REQUIRED
+.confetti {
+    position: fixed;
+    top: -10px;
+    width: 6px;
+    height: 10px;
+    opacity: 0.9;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+*/
+
+/* EXPOSE FUNCTION GLOBALLY */
+window.confettiBurst = confettiBurst;
+
+/* =========================
+   NAVBAR SCROLL EFFECT
+========================= */
+
+window.addEventListener("scroll", () => {
+    const nav = qs("header");
+
+    if (!nav) return;
+
+    if (window.scrollY > 50) {
+        nav.style.backdropFilter = "blur(10px)";
+        nav.style.background = "rgba(10,10,15,0.8)";
+    } else {
+        nav.style.backdropFilter = "none";
+        nav.style.background = "transparent";
+    }
+});
